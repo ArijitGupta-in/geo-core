@@ -1,4 +1,8 @@
-import { DEGREES_PER_CIRCLE, MAX_LONGITUDE, MIN_LONGITUDE } from "./constants.js";
+import {
+    DEGREES_PER_CIRCLE,
+    MAX_LONGITUDE,
+    MIN_LONGITUDE,
+} from "./constants.js";
 import { dmsToDecimal } from "./conversion.js";
 import { validateCoordinate } from "./validation.js";
 import type { Coordinate, CoordinateInput, DMSCoordinate } from "./types.js";
@@ -9,7 +13,8 @@ import type { Coordinate, CoordinateInput, DMSCoordinate } from "./types.js";
  * returned unchanged. This does not validate a coordinate.
  */
 export function normalizeLongitude(longitude: number): number {
-    if (!Number.isFinite(longitude)) throw new TypeError("Longitude must be a finite number");
+    if (!Number.isFinite(longitude))
+        throw new TypeError("Longitude must be a finite number");
     // The remainder is exact in floating point, so in-range input is never perturbed.
     let wrapped = longitude % DEGREES_PER_CIRCLE;
     if (wrapped > MAX_LONGITUDE) wrapped -= DEGREES_PER_CIRCLE;
@@ -19,8 +24,12 @@ export function normalizeLongitude(longitude: number): number {
 
 /** Wraps a finite angle into [0, 360). */
 export function normalizeAngle(degrees: number): number {
-    if (!Number.isFinite(degrees)) throw new TypeError("Angle must be a finite number");
-    return ((degrees % DEGREES_PER_CIRCLE) + DEGREES_PER_CIRCLE) % DEGREES_PER_CIRCLE;
+    if (!Number.isFinite(degrees))
+        throw new TypeError("Angle must be a finite number");
+    return (
+        ((degrees % DEGREES_PER_CIRCLE) + DEGREES_PER_CIRCLE) %
+        DEGREES_PER_CIRCLE
+    );
 }
 
 /**
@@ -31,7 +40,9 @@ export function normalizeAngle(degrees: number): number {
  */
 export function normalizeCoordinate(value: CoordinateInput): Coordinate {
     const candidate: unknown = value;
-    const isDMSShaped = typeof candidate === "object" && candidate !== null &&
+    const isDMSShaped =
+        typeof candidate === "object" &&
+        candidate !== null &&
         typeof (candidate as { latitude?: unknown }).latitude === "object";
     if (isDMSShaped) {
         const { latitude, longitude } = dmsToDecimal(value as DMSCoordinate);

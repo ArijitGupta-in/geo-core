@@ -32,7 +32,11 @@ export {
     radiansToDegrees,
 } from "./conversion.js";
 
-export { normalizeAngle, normalizeCoordinate, normalizeLongitude } from "./normalization.js";
+export {
+    normalizeAngle,
+    normalizeCoordinate,
+    normalizeLongitude,
+} from "./normalization.js";
 
 export {
     isCoordinate,
