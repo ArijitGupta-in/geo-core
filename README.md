@@ -11,7 +11,7 @@ coordinate conversion, normalization, and angular utilities used by the `@arijit
 
 Accepts coordinates in **decimal degrees** or **Degrees, Minutes, Seconds (DMS)** format.
 
-> Pre-release (`0.x`). The API and geographic conventions may change until the first tagged release.
+> Stable release (`1.0.0`). Public API changes follow semantic versioning.
 
 ## Installation
 

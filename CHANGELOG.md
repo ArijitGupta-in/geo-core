@@ -9,6 +9,8 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-10-30
+
 ### Added
 
 - `validateLatitudeDMS` and `validateLongitudeDMS` exported from the public API for validating a single DMS axis.
