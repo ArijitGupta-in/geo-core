@@ -40,4 +40,6 @@ export {
     validateBounds,
     validateCoordinate,
     validateDMSCoordinate,
+    validateLatitudeDMS,
+    validateLongitudeDMS,
 } from "./validation.js";

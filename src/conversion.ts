@@ -1,6 +1,15 @@
-import { DEGREES_PER_RADIAN, RADIANS_PER_DEGREE } from "./constants.js";
-import { validateDMSCoordinate } from "./validation.js";
+import { DEGREES_PER_RADIAN, MINUTES_PER_DEGREE, RADIANS_PER_DEGREE, SECONDS_PER_DEGREE } from "./constants.js";
+import { validateDMSCoordinate, validateLatitudeDMS, validateLongitudeDMS } from "./validation.js";
 import type { Coordinate, DMSCoordinate, LatitudeDMS, LongitudeDMS } from "./types.js";
+
+/** Combines DMS components into a signed decimal value, never producing negative zero. */
+function toSignedDecimal(
+    value: { degrees: number; minutes: number; seconds: number },
+    negative: boolean,
+): number {
+    const magnitude = value.degrees + value.minutes / MINUTES_PER_DEGREE + value.seconds / SECONDS_PER_DEGREE;
+    return negative && magnitude !== 0 ? -magnitude : magnitude;
+}
 
 /** Converts finite degrees to radians. */
 export function degreesToRadians(degrees: number): number {
@@ -16,31 +25,21 @@ export function radiansToDegrees(radians: number): number {
 
 /** Converts a latitude DMS value to signed decimal degrees. */
 export function latitudeDMSToDecimal(value: LatitudeDMS): number {
-    validateDMSCoordinate({
-        latitude: value,
-        longitude: { degrees: 0, minutes: 0, seconds: 0, direction: "E" },
-    });
-    const magnitude = value.degrees + value.minutes / 60 + value.seconds / 3600;
-    return value.direction === "S" ? -magnitude : magnitude;
+    validateLatitudeDMS(value);
+    return toSignedDecimal(value, value.direction === "S");
 }
 
 /** Converts a longitude DMS value to signed decimal degrees. */
 export function longitudeDMSToDecimal(value: LongitudeDMS): number {
-    validateDMSCoordinate({
-        latitude: { degrees: 0, minutes: 0, seconds: 0, direction: "N" },
-        longitude: value,
-    });
-    const magnitude = value.degrees + value.minutes / 60 + value.seconds / 3600;
-    return value.direction === "W" ? -magnitude : magnitude;
+    validateLongitudeDMS(value);
+    return toSignedDecimal(value, value.direction === "W");
 }
 
 /** Converts a validated DMS coordinate to decimal degrees. */
 export function dmsToDecimal(value: DMSCoordinate): Coordinate {
     validateDMSCoordinate(value);
-    const latitude = value.latitude.degrees + value.latitude.minutes / 60 + value.latitude.seconds / 3600;
-    const longitude = value.longitude.degrees + value.longitude.minutes / 60 + value.longitude.seconds / 3600;
     return {
-        latitude: value.latitude.direction === "S" ? -latitude : latitude,
-        longitude: value.longitude.direction === "W" ? -longitude : longitude,
+        latitude: toSignedDecimal(value.latitude, value.latitude.direction === "S"),
+        longitude: toSignedDecimal(value.longitude, value.longitude.direction === "W"),
     };
 }
