@@ -10,14 +10,20 @@
   "types": "./dist/index.d.ts",
   "exports": { ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" } },
   "files": ["dist"],
+  "sideEffects": false,
   "scripts": {
     "build": "tsc",
     "test": "vitest run",
-    "check": "tsc --noEmit",
-    "prepublishOnly": "npm run check && npm test && npm run build"
+    "test:coverage": "vitest run --coverage",
+    "check": "tsc --noEmit && tsc --noEmit -p tsconfig.test.json",
+    "prepublishOnly": "npm run check && npm run test:coverage && npm run build"
   },
   "keywords": ["geo", "geospatial", "coordinates", "latitude", "longitude", "dms", "geography", "validation", "normalization"],
   "author": "Arijit Gupta",
   "license": "MIT",
-  "devDependencies": { "typescript": "^7.0.2", "vitest": "^4.1.11" }
+  "devDependencies": {
+    "@vitest/coverage-v8": "^4.1.11",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.11"
+  }
 }
