@@ -46,3 +46,9 @@ export interface Bounds {
 
 /** Coordinate input accepted by APIs supporting decimal degrees and DMS. */
 export type CoordinateInput = Coordinate | DMSCoordinate;
+
+/** Options for decimal-to-DMS conversion. */
+export interface DMSOptions {
+    /** Decimal places kept in seconds, from 0 to 9. Defaults to 6. */
+    fractionDigits?: number;
+}

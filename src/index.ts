@@ -4,6 +4,7 @@ export type {
     Coordinate,
     CoordinateInput,
     DMSCoordinate,
+    DMSOptions,
     LatitudeDMS,
     LatitudeDirection,
     LongitudeDMS,
@@ -25,12 +26,17 @@ export {
 } from "./constants.js";
 
 export {
+    decimalToDMS,
     degreesToRadians,
     dmsToDecimal,
     latitudeDMSToDecimal,
+    latitudeToDMS,
     longitudeDMSToDecimal,
+    longitudeToDMS,
     radiansToDegrees,
 } from "./conversion.js";
+
+export { coordinatesEqual } from "./equality.js";
 
 export {
     normalizeAngle,
