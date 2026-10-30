@@ -5,7 +5,9 @@ import {
     validateBounds,
     validateCoordinate,
     validateDMSCoordinate,
+    validateLatitude,
     validateLatitudeDMS,
+    validateLongitude,
     validateLongitudeDMS,
 } from "../src/index.js";
 
@@ -216,6 +218,38 @@ describe("coordinate validation", () => {
         expect(() => validateLatitudeDMS(null as never)).toThrow(TypeError);
         expect(() => validateLongitudeDMS([] as never)).toThrow(TypeError);
         expect(() => validateDMSCoordinate(null as never)).toThrow(TypeError);
+    });
+});
+
+describe("single-axis decimal validation", () => {
+    it("accepts valid latitude and longitude values, including inclusive boundaries", () => {
+        expect(() => validateLatitude(22.5726)).not.toThrow();
+        expect(() => validateLongitude(88.3639)).not.toThrow();
+        expect(() => validateLatitude(-90)).not.toThrow();
+        expect(() => validateLatitude(90)).not.toThrow();
+        expect(() => validateLongitude(-180)).not.toThrow();
+        expect(() => validateLongitude(180)).not.toThrow();
+    });
+
+    it("rejects latitude and longitude values outside their ranges", () => {
+        expect(() => validateLatitude(-90.000001)).toThrow(RangeError);
+        expect(() => validateLatitude(90.000001)).toThrow(RangeError);
+        expect(() => validateLongitude(-180.000001)).toThrow(RangeError);
+        expect(() => validateLongitude(180.000001)).toThrow(RangeError);
+    });
+
+    it("rejects non-finite and non-numeric runtime inputs with TypeError", () => {
+        for (const value of [
+            Number.NaN,
+            Number.POSITIVE_INFINITY,
+            Number.NEGATIVE_INFINITY,
+            "22.5726",
+            null,
+            undefined,
+        ]) {
+            expect(() => validateLatitude(value as never)).toThrow(TypeError);
+            expect(() => validateLongitude(value as never)).toThrow(TypeError);
+        }
     });
 });
 
