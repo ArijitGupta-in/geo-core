@@ -9,6 +9,26 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-10-30
+
+### Added
+
+- `decimalToDMS`, `latitudeToDMS`, and `longitudeToDMS`: the inverse of `dmsToDecimal`, with a `fractionDigits` option (default 6, range 0 to 9). Seconds never round up to 60, and values that round to zero stay in the N/E hemisphere.
+- `coordinatesEqual(a, b, tolerance?)`: compares decimal or DMS coordinates, treating longitude `-180` and `180` as equal, comparing longitude around the circle, and treating the same pole as equal regardless of longitude.
+- `DMSOptions` type.
+- `publishConfig.access: "public"` in `package.json`.
+- `lint:md` script and `.markdownlint.json`, run in CI.
+
+### Changed
+
+- `tsconfig.json` now enables `verbatimModuleSyntax`, `isolatedModules`, `noUncheckedSideEffectImports`, and `moduleDetection: "force"`, matching the sibling packages. Source maps and declaration maps stay disabled because `src` is not published.
+- CI uses `actions/checkout@v6` and `actions/setup-node@v6` with read-only `contents` permissions.
+
+### Internal
+
+- `validateLatitudeDMS` and `validateLongitudeDMS` share one axis-parameterised validator, and DMS-to-decimal arithmetic lives in a single `dmsToMagnitude` helper. Public behavior and error messages are unchanged.
+- Single-value `validateLatitude` and `validateLongitude` helpers back `validateCoordinate` and the new single-axis conversions.
+
 ## [1.0.0] - 2026-10-30
 
 ### Added

@@ -11,7 +11,7 @@ coordinate conversion, normalization, and angular utilities used by the `@arijit
 
 Accepts coordinates in **decimal degrees** or **Degrees, Minutes, Seconds (DMS)** format.
 
-> Stable release (`1.0.0`). Public API changes follow semantic versioning.
+> Stable release. Public API changes follow semantic versioning.
 
 ## Installation
 
@@ -46,6 +46,20 @@ const kolkata: DMSCoordinate = {
 
 dmsToDecimal(kolkata);
 // { latitude: 22.5726, longitude: 88.3639 }
+
+// And back again. Seconds are rounded to 6 decimal places by default.
+decimalToDMS({ latitude: 22.5726, longitude: 88.3639 });
+// Same value as `kolkata`
+```
+
+### Comparing coordinates
+
+```ts
+import { coordinatesEqual } from "@arijitgupta/geo-core";
+
+coordinatesEqual({ latitude: 5, longitude: -180 }, { latitude: 5, longitude: 180 }); // true
+coordinatesEqual({ latitude: 90, longitude: 10 }, { latitude: 90, longitude: -120 }); // true (same pole)
+coordinatesEqual({ latitude: 0, longitude: 179.9999 }, { latitude: 0, longitude: -179.9999 }, 0.001); // true
 ```
 
 ### Normalizing input
@@ -80,6 +94,7 @@ radiansToDegrees(Math.PI); // 180
 | --- | --- |
 | `Coordinate` | `{ latitude, longitude }` in decimal degrees |
 | `DMSCoordinate` | `{ latitude: LatitudeDMS, longitude: LongitudeDMS }` |
+| `DMSOptions` | `{ fractionDigits? }` options for decimal-to-DMS conversion |
 | `LatitudeDMS` / `LongitudeDMS` | `{ degrees, minutes, seconds, direction }` for one axis |
 | `LatitudeDirection` / `LongitudeDirection` | `"N" \| "S"` / `"E" \| "W"` |
 | `CoordinateInput` | `Coordinate \| DMSCoordinate` |
@@ -106,10 +121,27 @@ All validators return `void` on success and throw on failure. Error messages inc
 | --- | --- |
 | `dmsToDecimal(dms)` | `DMSCoordinate` to decimal-degree `Coordinate` |
 | `latitudeDMSToDecimal(lat)` / `longitudeDMSToDecimal(lon)` | Convert one DMS axis to signed decimal degrees |
+| `decimalToDMS(coord, options?)` | Decimal-degree `Coordinate` to `DMSCoordinate`; the inverse of `dmsToDecimal` |
+| `latitudeToDMS(lat, options?)` / `longitudeToDMS(lon, options?)` | Convert one decimal axis to DMS |
 | `degreesToRadians(deg)` / `radiansToDegrees(rad)` | Angle unit conversion |
 
 DMS inputs are validated first, so these throw the same errors as the validators. Results never contain negative zero.
 `degreesToRadians` and `radiansToDegrees` throw `TypeError` for non-finite input.
+
+`decimalToDMS` and its single-axis variants validate the decimal input (`TypeError` / `RangeError`) and accept
+`{ fractionDigits }` (an integer from 0 to 9, default 6) to set the decimal places kept in seconds. Rounding is applied
+once, so seconds never reach 60 and the carry moves into minutes and degrees. Zero, and any value that rounds to zero,
+is reported as `N` / `E`. Longitude `-180` becomes `180°W`.
+
+### Comparison
+
+| Function | Description |
+| --- | --- |
+| `coordinatesEqual(a, b, tolerance?)` | Compares two decimal or DMS coordinates; `tolerance` is in degrees, applied to each axis, and defaults to `0` |
+
+Both inputs are validated like `normalizeCoordinate`. Longitude is compared around the circle, so `-180` equals `180`
+and `179.9999` is within `0.001` of `-179.9999`. Two coordinates at the same pole (`|latitude| === 90`) are equal
+whatever their longitudes. A negative tolerance throws `RangeError`; a non-finite one throws `TypeError`.
 
 ### Normalization
 
@@ -150,6 +182,7 @@ npm install            # install dev dependencies
 npm test               # run tests with Vitest
 npm run test:coverage  # run tests and enforce the 80% coverage threshold
 npm run check          # type-check source and tests without emitting output
+npm run lint:md        # lint Markdown files
 npm run build          # compile TypeScript to dist/
 ```
 

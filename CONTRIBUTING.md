@@ -22,9 +22,10 @@ npm install
 | `npm test` | Run the full test suite (Vitest) |
 | `npm run test:coverage` | Run the tests and enforce the 80% coverage threshold |
 | `npm run check` | Type-check source and tests without emitting output |
+| `npm run lint:md` | Lint Markdown files |
 | `npm run build` | Compile TypeScript to `dist/` |
 
-Run `npm run check` and `npm run test:coverage` before opening a pull request. Both must pass cleanly.
+Run `npm run check`, `npm run lint:md`, and `npm run test:coverage` before opening a pull request. All must pass cleanly.
 
 ## Project conventions
 
@@ -41,8 +42,10 @@ Run `npm run check` and `npm run test:coverage` before opening a pull request. B
 | `src/types.ts` | All exported types and interfaces |
 | `src/constants.ts` | Shared angular and Earth constants |
 | `src/validation.ts` | Validators and structural type guards |
-| `src/conversion.ts` | DMS-to-decimal and degree/radian conversion |
+| `src/dms.ts` | Internal DMS arithmetic shared by validation and conversion |
+| `src/conversion.ts` | DMS/decimal and degree/radian conversion |
 | `src/normalization.ts` | Longitude, angle, and coordinate normalization |
+| `src/equality.ts` | Coordinate comparison |
 | `src/index.ts` | Public API barrel |
 
 ### No runtime dependencies
@@ -85,9 +88,18 @@ Update `README.md` whenever the public API or the coordinate conventions change.
 
 1. Fork the repository and create a branch from `main`.
 2. Make your changes, following the conventions above.
-3. Run `npm run check` and `npm run test:coverage` — both must pass.
+3. Run `npm run check`, `npm run lint:md`, and `npm run test:coverage` — all must pass.
 4. Open a pull request against `main`. Describe *what* changed and *why*.
 5. Link any related issue (e.g. `Closes #1`).
+
+## Releasing
+
+Publishing runs from GitHub Actions through npm trusted publishing, triggered by a `v*` tag.
+
+1. Move the `[Unreleased]` changelog entries under a new version heading and commit.
+2. Run `npm version <patch|minor|major>`; it bumps `package.json`, commits, and creates the `vX.Y.Z` tag.
+3. Run `git push --follow-tags`. The `Publish to npm` workflow fails unless the tag matches the `package.json` version.
+4. Create a GitHub release for the tag using the changelog entry as the notes.
 
 ## Reporting issues
 
