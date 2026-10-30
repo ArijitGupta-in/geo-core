@@ -4,15 +4,17 @@ import {
     MINUTES_PER_DEGREE,
     MIN_LATITUDE,
     MIN_LONGITUDE,
-    SECONDS_PER_DEGREE,
     SECONDS_PER_MINUTE,
 } from "./constants.js";
+import { dmsToMagnitude } from "./dms.js";
 import type {
     Bounds,
     Coordinate,
     DMSCoordinate,
     LatitudeDMS,
+    LatitudeDirection,
     LongitudeDMS,
+    LongitudeDirection,
 } from "./types.js";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -95,67 +97,99 @@ export function isDMSCoordinate(value: unknown): value is DMSCoordinate {
     );
 }
 
+/** Validates a single decimal-degree latitude. */
+export function validateLatitude(latitude: number): void {
+    assertFiniteNumber(latitude, "Latitude");
+    if (latitude < MIN_LATITUDE || latitude > MAX_LATITUDE) {
+        throw new RangeError(
+            "Latitude must be between -90 and 90, got " + latitude
+        );
+    }
+}
+
+/** Validates a single decimal-degree longitude. */
+export function validateLongitude(longitude: number): void {
+    assertFiniteNumber(longitude, "Longitude");
+    if (longitude < MIN_LONGITUDE || longitude > MAX_LONGITUDE) {
+        throw new RangeError(
+            "Longitude must be between -180 and 180, got " + longitude
+        );
+    }
+}
+
 /** Validates a decimal-degree coordinate. */
 export function validateCoordinate(value: Coordinate): void {
     if (!isRecord(value)) throw new TypeError("Coordinate must be an object");
+    // Both fields are type-checked before ranges so a bad longitude type is reported first.
     assertFiniteNumber(value.latitude, "Latitude");
     assertFiniteNumber(value.longitude, "Longitude");
-    if (value.latitude < MIN_LATITUDE || value.latitude > MAX_LATITUDE) {
-        throw new RangeError(
-            "Latitude must be between -90 and 90, got " + value.latitude
+    validateLatitude(value.latitude);
+    validateLongitude(value.longitude);
+}
+
+interface DMSAxis<D extends string> {
+    label: string;
+    positive: D;
+    negative: D;
+    maxDegrees: number;
+}
+
+const LATITUDE_AXIS: DMSAxis<LatitudeDirection> = {
+    label: "Latitude",
+    positive: "N",
+    negative: "S",
+    maxDegrees: MAX_LATITUDE,
+};
+
+const LONGITUDE_AXIS: DMSAxis<LongitudeDirection> = {
+    label: "Longitude",
+    positive: "E",
+    negative: "W",
+    maxDegrees: MAX_LONGITUDE,
+};
+
+function validateDMSAxis<D extends string>(
+    value: { degrees: number; minutes: number; seconds: number; direction: D },
+    axis: DMSAxis<D>
+): void {
+    const { label, positive, negative, maxDegrees } = axis;
+    if (!isRecord(value))
+        throw new TypeError(label + " DMS value must be an object");
+    assertFiniteNumber(value.degrees, label + " degrees");
+    assertFiniteNumber(value.minutes, label + " minutes");
+    assertFiniteNumber(value.seconds, label + " seconds");
+    if (value.direction !== positive && value.direction !== negative)
+        throw new TypeError(
+            label +
+                ' direction must be "' +
+                positive +
+                '" or "' +
+                negative +
+                '"'
         );
-    }
-    if (value.longitude < MIN_LONGITUDE || value.longitude > MAX_LONGITUDE) {
+    validateDegrees(value.degrees, maxDegrees, label);
+    validateMinutes(value.minutes);
+    validateSeconds(value.seconds);
+    if (dmsToMagnitude(value) > maxDegrees) {
         throw new RangeError(
-            "Longitude must be between -180 and 180, got " + value.longitude
+            "DMS " +
+                label.toLowerCase() +
+                " must not exceed " +
+                maxDegrees +
+                " degrees"
         );
     }
 }
 
 /** Validates a latitude DMS value: direction, integer degrees/minutes, seconds, and a total of at most 90 degrees. */
 export function validateLatitudeDMS(value: LatitudeDMS): void {
-    if (!isRecord(value))
-        throw new TypeError("Latitude DMS value must be an object");
-    assertFiniteNumber(value.degrees, "Latitude degrees");
-    assertFiniteNumber(value.minutes, "Latitude minutes");
-    assertFiniteNumber(value.seconds, "Latitude seconds");
-    if (value.direction !== "N" && value.direction !== "S")
-        throw new TypeError('Latitude direction must be "N" or "S"');
-    validateDegrees(value.degrees, MAX_LATITUDE, "Latitude");
-    validateMinutes(value.minutes);
-    validateSeconds(value.seconds);
-    if (
-        value.degrees +
-            value.minutes / MINUTES_PER_DEGREE +
-            value.seconds / SECONDS_PER_DEGREE >
-        MAX_LATITUDE
-    ) {
-        throw new RangeError("DMS latitude must not exceed 90 degrees");
-    }
+    validateDMSAxis(value, LATITUDE_AXIS);
 }
 
 /** Validates a longitude DMS value: direction, integer degrees/minutes, seconds, and a total of at most 180 degrees. */
 export function validateLongitudeDMS(value: LongitudeDMS): void {
-    if (!isRecord(value))
-        throw new TypeError("Longitude DMS value must be an object");
-    assertFiniteNumber(value.degrees, "Longitude degrees");
-    assertFiniteNumber(value.minutes, "Longitude minutes");
-    assertFiniteNumber(value.seconds, "Longitude seconds");
-    if (value.direction !== "E" && value.direction !== "W")
-        throw new TypeError('Longitude direction must be "E" or "W"');
-    validateDegrees(value.degrees, MAX_LONGITUDE, "Longitude");
-    validateMinutes(value.minutes);
-    validateSeconds(value.seconds);
-    if (
-        value.degrees +
-            value.minutes / MINUTES_PER_DEGREE +
-            value.seconds / SECONDS_PER_DEGREE >
-        MAX_LONGITUDE
-    ) {
-        throw new RangeError("DMS longitude must not exceed 180 degrees");
-    }
+    validateDMSAxis(value, LONGITUDE_AXIS);
 }
-
 /** Validates a DMS coordinate, including axis-specific directions and limits. */
 export function validateDMSCoordinate(value: DMSCoordinate): void {
     if (!isRecord(value))
