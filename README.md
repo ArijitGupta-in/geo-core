@@ -26,11 +26,22 @@ The package is ESM-only and has no Node.js version requirement of its own: it us
 ### Validating coordinates
 
 ```ts
-import { validateCoordinate, type Coordinate } from "@arijitgupta/geo-core";
+import {
+    validateCoordinate,
+    validateLatitude,
+    validateLongitude,
+    type Coordinate,
+} from "@arijitgupta/geo-core";
 
 const point: Coordinate = { latitude: 22.5726, longitude: 88.3639 };
 validateCoordinate(point); // returns normally
 
+// Validate either axis independently.
+validateLatitude(22.5726);
+validateLongitude(88.3639);
+
+validateLatitude(91);   // throws RangeError
+validateLongitude(181); // throws RangeError
 validateCoordinate({ latitude: 91, longitude: 0 }); // throws RangeError
 ```
 
@@ -107,13 +118,15 @@ All validators return `void` on success and throw on failure. Error messages inc
 | Function | Description |
 | --- | --- |
 | `validateCoordinate(coord)` | Validates a decimal-degree `Coordinate` |
+| `validateLatitude(lat)` | Validates one decimal-degree latitude in the inclusive range `[-90, 90]` |
+| `validateLongitude(lon)` | Validates one decimal-degree longitude in the inclusive range `[-180, 180]` |
 | `validateDMSCoordinate(dms)` | Validates a full `DMSCoordinate` |
 | `validateLatitudeDMS(lat)` / `validateLongitudeDMS(lon)` | Validate a single DMS axis |
 | `validateBounds(bounds)` | Validates a `Bounds`; `west > east` is allowed |
 | `isCoordinate(value)` / `isDMSCoordinate(value)` | Structural type guards: object shape with **finite** numbers; ranges are not checked |
 
-**Throws:** `TypeError` for a non-object value, a non-finite or non-numeric field, or an invalid direction.  
-**Throws:** `RangeError` for a value outside its valid range, or for non-integer DMS `degrees` or `minutes`.
+**Throws:** `TypeError` when a decimal axis value is not a finite number (including `NaN` and either infinity).  
+**Throws:** `RangeError` when a decimal axis is outside its inclusive latitude or longitude range. The DMS validators also throw `TypeError` for non-object values, non-finite or non-numeric fields, or invalid directions, and `RangeError` for values outside their valid ranges or non-integer DMS `degrees` / `minutes`.
 
 ### Conversion
 
