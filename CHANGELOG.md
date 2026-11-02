@@ -9,6 +9,10 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+### Added
+
+- Exported `validateLatitude` and `validateLongitude` from the public API, with direct tests for valid values, inclusive boundaries, out-of-range values, and invalid runtime inputs. Thanks to [@Aaqibhafeezkhan](https://github.com/Aaqibhafeezkhan) for contributing this improvement.
+
 ## [1.1.0] - 2026-10-30
 
 ### Added
